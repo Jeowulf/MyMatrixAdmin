@@ -22,6 +22,11 @@
         "presets": [
           "react-hmre"
         ]
+      },
+      "production": {
+        "presets": [
+          "react-hmre"
+        ]
       }
     }
   },

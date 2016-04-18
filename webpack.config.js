@@ -10,7 +10,6 @@ const common = {
     output: {
         path: path.join(__dirname, 'dist'),
         filename: 'app.js',
-        publicPath: '/'
     },
     plugins: [
         new webpack.optimize.OccurenceOrderPlugin()
@@ -25,6 +24,9 @@ const dev = {
         'webpack/hot/only-dev-server',
         'eventsource-polyfill',
     ],
+    output: {
+        publicPath: '/'
+    },
     module: {
         loaders: [{
             test: /\.js$/,
@@ -51,6 +53,17 @@ const prod = {
     entry: [
         './src/js/index',
     ],
+    output: {
+        publicPath: '/dist/'
+    },
+    module: {
+        loaders: [{
+            test: /\.js$/,
+            loaders: ['babel'],
+            include: path.join(__dirname, 'src/js'),
+            exclude: path.join(__dirname, 'node_modules'),
+        }],
+    },
     plugins: [
         new webpack.DefinePlugin({
           'process.env': {
