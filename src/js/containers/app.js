@@ -20,9 +20,7 @@ class App extends Component {
                     <div>Current State: {crazyPerson.status}</div>
                     <button onClick={onclick}>Click Me!</button>
                 </div>
-                <Main
-                    special={"special"}
-                    dave={dave} />
+                <Main />
             </div>
         );
     }

@@ -2,11 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import Dumb from '../components/dumb';
 import Radium from 'radium';
-import Feed from './feed';
-import Login from './login';
-import Longform from './longform';
-import GraphicNovel from './graphicNovel';
-import MenuAndSettings from './menuAndSettings';
+import { Link, browserHistory } from 'react-router';
 
 const styles = {
     base: {
@@ -38,36 +34,22 @@ class Main extends Component {
     }
 
     toggleEnabled() {
-        debugger
         this.setState({ enabled: !this.state.enabled });
     }
 
     componentDidMount() {
-      console.log('hola')
+    }
+
+    login() {
+      browserHistory.push('/login');
     }
 
     render() {
       const
-        special = this.props.special,
-        toggleEnabled = this.toggleEnabled;
+        login = this.login;
         return (
             <div>
-                <div style={styles.rowContainer}>
-                    <div style={styles.colContainer} onClick={toggleEnabled.bind(this)}>Last Day</div>
-                    <div style={styles.colContainer}>Of School</div>
-                </div>
-                <div style={styles.rowContainer}>
-                    <div style={styles.colContainer}>first</div>
-                    <div style={styles.colContainer}>most</div>
-                </div>
-                <h1 style={styles.base}>This is the main component it is {special}</h1>
-                <button onClick={onclick}></button>
-                <Dumb />
-                <Feed special={'special'}/>
-                <Login special={'special'}/>
-                <Longform special={'special'}/>
-                <GraphicNovel special={'special'}/>
-                <MenuAndSettings special={'special'}/>
+                <button onClick={login}>click dis button</button>
             </div>
         );
     }
@@ -77,8 +59,6 @@ Main = Radium(Main);
 
 
 Main.propTypes = {
-    special: PropTypes.string.isRequired,
-    dave: PropTypes.string,
 }
 
 export default Main;
