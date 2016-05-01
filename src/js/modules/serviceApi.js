@@ -1,6 +1,10 @@
 import 'isomorphic-fetch';
+import React, { Component, PropTypes } from 'react';
+import { connect } from 'react-redux';
+import * as Admin from '../actions/adminAuth';
+import Login from '../containers/login';
 
-function signUp(name, password, company, jobTitle, email, phone, admin) {
+function signUpUser({ name, password, company, jobTitle, email, phone, admin }) {
   const init = {
     method: 'POST',
     body: JSON.stringify({
@@ -16,7 +20,7 @@ function signUp(name, password, company, jobTitle, email, phone, admin) {
       'Content-Type': 'application/json'
     }
   };
-  fetch('http://mymatrixapidev.azurewebsites.net/users', init)
+  return fetch('http://mymatrixapidev.azurewebsites.net/users', init)
     .then(function(response) {
       if (response.status >= 400) {
         throw new Error("Bad response from server");
@@ -50,9 +54,10 @@ function loginUser(email, password) {
         return response.json();
       }
     })
-    .then(function(user) {
-      console.log(user);
-    });
+    .then((user) => {
+      console.log('success', user);
+      Admin.login(user);
+    })
 }
 
 function getSurveys() {
@@ -61,7 +66,7 @@ function getSurveys() {
     mode: 'cors',
     cache: 'default'
   };
-  fetch('http://mymatrixapidev.azurewebsites.net/surveys', init)
+  return fetch('http://mymatrixapidev.azurewebsites.net/surveys', init)
     .then(function(response) {
       if (response.status >= 400) {
         throw new Error("Bad response from server");
@@ -70,9 +75,6 @@ function getSurveys() {
         return response.json();
       }
     })
-    .then(function(surveys) {
-      console.log(surveys);
-    });
 }
 
 function createSurvey(name, preEvent, auth) {
@@ -123,8 +125,8 @@ function addQuestionToSurvey(surveyId, questions, auth) {
   })
 }
 
-function updateQuestionsForSurvey(surveyId, questions, auth, questionId) {
-  fetch(`http://mymatrixapidev.azurewebsites.net/surveys/${surveyId}/questions/${questionId}`, {
+function updateQuestionsForSurvey({ surveyId, questions, auth, questionId }) {
+  return fetch(`http://mymatrixapidev.azurewebsites.net/surveys/${surveyId}/questions`, {
     method: 'PUT',
     headers: {
       'Authorization': auth,
@@ -134,18 +136,23 @@ function updateQuestionsForSurvey(surveyId, questions, auth, questionId) {
   })
 }
 
-function deleteQuestionFromSurvey() {
-
-}
-
-function getSurveyResponses(surveyId, auth) {
-  fetch('http://mymatrixapidev.azurewebsites.net/surveys/${surveyId}/responses', {
-    method: 'GET',
+function deleteQuestionFromSurvey({ surveyId, auth, questionId }) {
+    return fetch(`http://mymatrixapidev.azurewebsites.net/surveys/${surveyId}/questions/${questionId}`, {
+    method: 'DELETE',
     headers: {
       'Authorization': auth,
-      'Content-Type': 'application/json'
-    },
+    }
   })
+}
+
+function getSurveyResponses({ surveyId, auth }) {
+    return fetch(`http://mymatrixapidev.azurewebsites.net/surveys/${surveyId}/responses`, {
+      method: 'GET',
+      headers: {
+        'Authorization': auth,
+        // 'Content-Type': 'application/json'
+      },
+    })
     .then(function(response) {
       if (response.status >= 400) {
         throw new Error("Bad response from server");
@@ -154,9 +161,6 @@ function getSurveyResponses(surveyId, auth) {
         return response.json();
       }
     })
-    .then(function(surveyResponses) {
-      console.log(surveyResponses);
-    });
 }
 
 
@@ -165,7 +169,7 @@ function getSurveyResponses(surveyId, auth) {
 export {
   getSurveys,
   loginUser,
-  signUp,
+  signUpUser,
   createSurvey,
   updateSurvey,
   deleteSurvey,

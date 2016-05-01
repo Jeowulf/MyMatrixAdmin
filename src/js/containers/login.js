@@ -1,8 +1,10 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import { login, signUp } from '../actions/adminAuth';
 import Radium from 'radium';
 import { Link, browserHistory } from 'react-router';
 import * as Api from '../modules/serviceApi';
+import * as Admin from '../actions/adminAuth';
 
 const styles = {
     mainContainer: {
@@ -52,12 +54,11 @@ class Login extends Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (this.state.adminLoggedIn === true) {
-             browserHistory.push('/surveyBuilder');
-        }
 
-        if (prevState.name !== this.state.name) {
-            // console.log(this.state.name);
+        if (prevProps.admin !== this.props.admin) {
+            if (this.props.admin.authenticated === true) {
+                browserHistory.push('/surveyBuilder');
+            }
         }
     }
 
@@ -73,23 +74,55 @@ class Login extends Component {
     }
 
     login() {
-        Api.loginUser(
-            this.state.email,
-            this.state.password
-        );
+        const
+            email = this.state.email,
+            loginAction = this.props.login,
+            password = this.state.password,
+            init = {
+            method: 'POST',
+            body: JSON.stringify({
+                email,
+                password
+            }),
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          };
+      fetch('http://mymatrixapidev.azurewebsites.net/users/login/admin', init)
+        .then(function(response) {
+          if (response.status >= 400) {
+            throw new Error("Bad response from server");
+          }
+          if (response.ok) {
+            return response.json();
+          }
+        })
+        .then((user) => {
+          loginAction(user);
+        })
     }
 
     signUp() {
-        if (this.state.name && this.state.password && this.state.company && this.state.jobTitle && this.state.email && this.state.phone) {
-            Api.signUp(
-                this.state.name,
-                this.state.password,
-                this.state.company,
-                this.state.jobTitle,
-                this.state.email,
-                this.state.phone,
-                true
-            );
+        const
+            signUpUser = this.props.signUp,
+            name = this.state.name,
+            password = this.state.password,
+            company = this.state.company,
+            jobTitle = this.state.jobTitle,
+            email = this.state.email,
+            phone = this.state.phone,
+            admin = true;
+
+        if (name && password && company && jobTitle && email && phone) {
+            signUpUser({
+                name,
+                password,
+                company,
+                jobTitle,
+                email,
+                phone,
+                admin
+            });
         }
     }
 
@@ -124,6 +157,7 @@ class Login extends Component {
     render() {
 
       const
+        admin = this.props.admin,
         handleNameChange = this.handleNameChange.bind(this),
         handlePasswordChange = this.handlePasswordChange.bind(this),
         handleCompanyChange = this.handleCompanyChange.bind(this),
@@ -198,6 +232,7 @@ class Login extends Component {
 
         return (
             <div style={styles.mainContainer}>
+            <div>Welcome: {admin.userInfo.name}</div>
                 {selectedView}
             </div>
         );
@@ -206,8 +241,42 @@ class Login extends Component {
 //required to allow the inline styling using radium
 Login = Radium(Login);
 
-//define your incoming props
 Login.propTypes = {
+    login: PropTypes.func.isRequired,
+    signUp: PropTypes.func.isRequired,
+    admin: PropTypes.object.isRequired,
 }
 
-export default Login;
+const mapStateToProps = (state) => {
+    return {
+        admin: state.admin,
+    };
+};
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        login: (userInfo) => dispatch(login(userInfo)),
+        signUp: ({
+                name,
+                password,
+                company,
+                jobTitle,
+                email,
+                phone,
+                admin,
+            }) => dispatch(signUp({
+                name,
+                password,
+                company,
+                jobTitle,
+                email,
+                phone,
+                admin,
+            })),
+    };
+};
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(Login);

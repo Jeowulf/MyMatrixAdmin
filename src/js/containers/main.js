@@ -1,28 +1,13 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import Dumb from '../components/dumb';
 import Radium from 'radium';
 import { Link, browserHistory } from 'react-router';
 
 const styles = {
-    base: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    background: 'blue',
-    border: 0,
-    borderRadius: 4,
-    color: 'white',
-    padding: '1.5em'
-  },
-  rowContainer: {
-    display: 'flex',
-    flexFlow: 'row-nowrap',
-    justifyContent: 'space-between',
-  },
-  colContainer: {
-    display: 'flex',
-    flexFlow: 'col-nowrap',
-  }
+    mainContainer: {
+        height: '100vh',
+        width: '100vw',
+    },
 };
 
 class Main extends Component {
@@ -48,8 +33,8 @@ class Main extends Component {
       const
         login = this.login;
         return (
-            <div>
-                <button onClick={login}>click dis button</button>
+            <div onClick={login}>
+                <div>Welcome to the MyMatrix Admin App</div>
             </div>
         );
     }

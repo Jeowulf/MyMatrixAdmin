@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { makeFunOfHim } from '../actions/crazyPerson';
+import { makeHimSane } from '../actions/sanePerson';
 import Main from './main.js';
 
 class App extends Component {
@@ -11,15 +12,9 @@ class App extends Component {
 
     render() {
         const
-            { crazyPerson, onclick } = this.props,
-            dave = 'dave';
+            { crazyPerson, onclick, clicker, sanePerson } = this.props;
         return (
             <div>
-                <div>
-                    <h1>Crazy People!!!</h1>
-                    <div>Current State: {crazyPerson.status}</div>
-                    <button onClick={onclick}>Click Me!</button>
-                </div>
                 <Main />
             </div>
         );
@@ -29,17 +24,21 @@ class App extends Component {
 App.propTypes = {
     crazyPerson: PropTypes.object.isRequired,
     onclick: PropTypes.func.isRequired,
+    sanePerson: PropTypes.object.isRequired,
+    clicker: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = (state) => {
     return {
         crazyPerson: state.crazyPerson,
+        sanePerson: state.sanePerson,
     };
 };
 
 const mapDispatchToProps = (dispatch) => {
     return {
         onclick: () => dispatch(makeFunOfHim()),
+        clicker: () => dispatch(makeHimSane()),
     };
 };
 

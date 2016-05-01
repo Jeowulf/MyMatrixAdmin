@@ -2,112 +2,88 @@ import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import Radium from 'radium';
 import * as Api from '../modules/serviceApi';
+import { getSurveys, getResponses } from '../actions/survey';
+import { Link, browserHistory } from 'react-router';
+import Surveys from '../components/surveys';
 
 //define your styling with Javascript objects
 //use flexbox for styling "https://css-tricks.com/snippets/css/a-guide-to-flexbox/"
 const styles = {
-    mainComponent: {
-        backgroundColor: 'blue',
+    mainContainer: {
+        display: 'flex',
+        flexFlow: 'column nowrap',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
     },
+    buildOptions: {
+        display: 'flex',
+        flexFlow: 'column nowrap',
+    }
 };
 
 class SurveyBuilder extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            surveyId: null,
-            name: null,
-            preEvent: null,
-            auth: "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJOYW1lIjoianVzdGluIGphY290IiwiUGFzc3dvcmQiOiJyMVdwVk15cThDY2EyNEhLcFB0THNXYXcraDZ2WnVuZHYyQzUzcUtKV2RJPSIsIkNvbXBhbnkiOiJtYXRyaXgiLCJKb2JUaXRsZSI6ImJvc3Mgb2YgZXZlcnl0aGluZyIsIkVtYWlsIjoianVzdGluLmphY290QG1hdHJpeHJlcy5jb20iLCJQaG9uZSI6Iig3NzApIDgyNi00NzI5IiwiSWQiOjQsIkFkbWluIjp0cnVlLCJSZXNwb25zZXMiOltdLCJVc2VyQXV0aGVudGljYXRpb25zIjpbXSwiVXNlckV2ZW50cyI6W10sIlVzZXJTdXJ2ZXlzIjpbXX0.NwX6BX_QjEPpe1m-bsSnqpAV8M_6vidJgXdZEB1qyRe_0MAYfbR4f4W_e0xZT2VR",
-            questions: [],
-            questionId: null,
+            surveysComponent: false,
+            createSurveyComponent: false,
+            surveyName: null,
+            preEvent: false,
+            authToken: null,
         };
     }
 
     getSurveys() {
-        const
-            name = this.state.name,
-            preEvent = this.state.preEvent,
-            auth = this.state.auth,
-            surveyId = this.state.surveyId,
-            questions = this.state.questions,
-            questionId = this.state.questionId;
+        this.props.getSurveys();
     }
 
-    deleteSurvey() {
-        const
-            auth = this.state.auth,
-            surveyId = this.state.surveyId;
+    getResponses({ auth, surveyId }) {
+         this.props.getResponses({ auth, surveyId });
+    }
 
-        Api.deleteSurvey(surveyId, auth);
+    handleNameChange(event) {
+        this.setState({surveyName: event.target.value});
+    }
+
+    handlePreEventClick(event) {
+        this.setState({preEvent: !this.state.preEvent});
+    }
+
+    enterCreateSurveyMode() {
+        this.setState({ createSurveyComponent: !this.state.createSurveyComponent })
     }
 
     createSurvey() {
         const
-            name = this.state.name,
+            name = this.state.surveyName,
             preEvent = this.state.preEvent,
-            auth = this.state.auth;
+            authToken = this.state.authToken;
 
-        Api.createSurvey(name, preEvent, auth);
+        Api.createSurvey(name, preEvent, authToken);
     }
 
-    updateSurvey() {
-        const
-            name = this.state.name,
-            preEvent = this.state.preEvent,
-            auth = this.state.auth,
-            surveyId = this.state.surveyId;
 
-        Api.updateSurvey(name, preEvent, surveyId, auth);
-    }
-
-    addQuestionToSurvey() {
-        const
-            auth = this.state.auth,
-            surveyId = this.state.surveyId,
-            questions = this.state.questions;
-
-        Api.addQuestionToSurvey(surveyId, questions, auth);
-    }
-
-    updateQuestionsForSurvey() {
-        const
-            auth = this.state.auth,
-            surveyId = this.state.surveyId,
-            questions = this.state.questions,
-            questionId = this.state.questionId;
-
-        Api.updateQuestionsForSurvey(surveyId, questions, auth, questionId);
-    }
-
-    deleteQuestionFromSurvey() {
-        const
-            name = this.state.name,
-            preEvent = this.state.preEvent,
-            auth = this.state.auth,
-            surveyId = this.state.surveyId,
-            questions = this.state.questions,
-            questionId = this.state.questionId;
-    }
-
-    getSurveyResponses() {
-        const
-            auth = this.state.auth,
-            surveyId = this.state.surveyId;
-
-        Api.getSurveyResponses(surveyId, auth);
-    }
 
     componentWillMount() {
     }
 
     componentDidMount() {
+        if (this.props.admin.authenticated) {
+            this.setState({ authToken: this.props.admin.userInfo.token });
+        }
     }
 
     componentWillReceiveProps() {
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps, prevState) {
+        if (this.props.surveys !== prevProps.surveys) {
+            this.setState({ surveysComponent: !this.state.surveysComponent });
+        }
+        if (this.props.admin.authenticated && this.props.admin.authenticated !== prevProps.admin.authenticated) {
+            this.setState({ authToken: this.props.admin.userInfo.token });
+        }
     }
 
     componentWillUnmount() {
@@ -115,34 +91,85 @@ class SurveyBuilder extends Component {
 
     render() {
         const
+            { surveys, admin } = this.props,
+            handleNameChange = this.handleNameChange.bind(this),
+            handlePreEventClick = this.handlePreEventClick.bind(this),
             getSurveys = this.getSurveys.bind(this),
-            deleteSurvey = this.deleteSurvey.bind(this),
+            getResponses = this.getResponses.bind(this),
+            responses = this.props.responses,
             createSurvey = this.createSurvey.bind(this),
-            updateSurvey = this.updateSurvey.bind(this),
-            addQuestionToSurvey = this.addQuestionToSurvey.bind(this),
-            updateQuestionsForSurvey = this.updateQuestionsForSurvey.bind(this),
-            deleteQuestionFromSurvey = this.deleteQuestionFromSurvey.bind(this),
-            getSurveyResponses = this.getSurveyResponses.bind(this);
+            preEvent = this.state.preEvent,
+            enterCreateSurveyMode = this.enterCreateSurveyMode.bind(this);
+
+        let
+            surveysComponent = (<div></div>),
+            getSurveysButton = this.state.surveysComponent ? 'hide surveys' : 'get surveys',
+            createSurveyComponent = (<div></div>),
+            createSurveyButton = this.state.createSurveyComponent ? 'exit create survey' : 'create survey';
+
+        if (this.state.surveysComponent) {
+            surveysComponent = (
+                <div>
+                    <Surveys surveyList={surveys} admin={admin} getSurveys={getSurveys} getResponses={getResponses} responses={responses} />
+                </div>
+            );
+        }
+
+        if (this.state.createSurveyComponent) {
+            createSurveyComponent = (
+                <div>
+                    <div>
+                       <input type="text" placeholder='survey name' value={this.state.surveyName} onChange={handleNameChange}></input>
+                    </div>
+                    <div>
+                       <label><input type="checkbox" checked={preEvent} onChange={handlePreEventClick}/>Check this box if creating a pre-event survey</label>
+                    </div>
+                    <div onClick={createSurvey}>create survey</div>
+                </div>
+            );
+        }
 
         return (
-            <div>
-                <button onClick={getSurveys}>getSurveys</button>
-                <button onClick={createSurvey}>createSurvey</button>
-                <button onClick={updateSurvey}>updateSurvey</button>
-                <button onClick={deleteSurvey}>deleteSurvey</button>
-                <button onClick={addQuestionToSurvey}>addQuestionToSurvey</button>
-                <button onClick={updateQuestionsForSurvey}>updateQuestionsForSurvey</button>
-                <button onClick={deleteQuestionFromSurvey}>deleteQuestionFromSurvey</button>
-                <button onClick={getSurveyResponses}>getSurveyResponses</button>
+            <div style={styles.mainContainer}>
+                <div>Welcome to the Survey Builder!</div>
+                <div style={styles.buildOptions}>
+                    <button onClick={getSurveys}>{getSurveysButton}</button>
+                    {surveysComponent}
+                </div>
+                <div style={styles.buildOptions}>
+                    <button onClick={enterCreateSurveyMode}>{createSurveyButton}</button>
+                    {createSurveyComponent}
+                </div>
             </div>
         );
     }
 }
-//required to allow the inline styling using radium
 SurveyBuilder = Radium(SurveyBuilder);
 
-//define your incoming props
 SurveyBuilder.propTypes = {
+    surveys: PropTypes.object,
+    admin: PropTypes.object,
+    getSurveys: PropTypes.func,
+    getResponses: React.PropTypes.func.isRequired,
+    responses: React.PropTypes.object,
 }
 
-export default SurveyBuilder;
+const mapStateToProps = (state) => {
+    return {
+        surveys: state.surveys,
+        admin: state.admin,
+        responses: state.responses,
+    };
+};
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        getSurveys: () => dispatch(getSurveys()),
+        getResponses: ({ auth, surveyId }) => dispatch(getResponses({ auth, surveyId })),
+    };
+};
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(SurveyBuilder);

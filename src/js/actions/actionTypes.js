@@ -1,7 +1,18 @@
-const FREAK_OUT = 'FREAK_OUT';
-const SOOTHE = 'SOOTHE';
+const
+  GET_SURVEYS = 'GET_SURVEYS',
+  SIGN_UP = 'SIGN_UP',
+  LOG_IN = 'LOG_IN',
+  MAKE_SANE = 'MAKE_SANE',
+  FREAK_OUT = 'FREAK_OUT',
+  SOOTHE = 'SOOTHE',
+  GET_RESPONSES = 'GET_RESPONSES';
 
 export {
+    SIGN_UP,
+    LOG_IN,
     FREAK_OUT,
-    SOOTHE
+    SOOTHE,
+    MAKE_SANE,
+    GET_SURVEYS,
+    GET_RESPONSES,
 };
